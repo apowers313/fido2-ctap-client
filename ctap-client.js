@@ -62,18 +62,14 @@ var CBOR_TYPE = {
 };
 
 // setup prototype
-module.exports = Auth;
+module.exports = CtapClient;
 
-function Auth(send, receive, options) {
-	if (typeof auth === "string") {
-		console.log("FFI not supported yet");
-	}
-
+function CtapClient(send, receive, options) {
 	this.externalSend = send;
 	this.externalReceive = receive;
 }
 
-Auth.prototype.authenticatorMakeCredential = function(rpId, clientDataHash, account, cryptoParameters, blacklist, extensions) {
+CtapClient.prototype.authenticatorMakeCredential = function(rpId, clientDataHash, account, cryptoParameters, blacklist, extensions) {
 	return new Promise(function(resolve, reject) {
 		var argCnt = 0;
 		var params = [];
@@ -186,7 +182,7 @@ Auth.prototype.authenticatorMakeCredential = function(rpId, clientDataHash, acco
 	}.bind(this));
 };
 
-Auth.prototype.authenticatorGetAssertion = function(rpId, clientDataHash, whitelist, extensions) {
+CtapClient.prototype.authenticatorGetAssertion = function(rpId, clientDataHash, whitelist, extensions) {
 	return new Promise(function(resolve, reject) {
 		var argCnt = 0;
 		var params = [];
@@ -258,10 +254,6 @@ Auth.prototype.authenticatorGetAssertion = function(rpId, clientDataHash, whitel
 					response["1"].id === undefined ||
 					typeof response["1"].id !== "string"
 				) {
-					// console.log (typeof response["1"]);
-					// console.log (response["1"].type);
-					// console.log (response["1"].id);
-					// console.log (typeof response["1"].id);
 					reject(Error("First in response parameter had wrong format: " + response["1"]));
 				}
 				// validation of second parameter: authenticatorData
@@ -287,19 +279,19 @@ Auth.prototype.authenticatorGetAssertion = function(rpId, clientDataHash, whitel
 	}.bind(this));
 };
 
-Auth.prototype.authenticatorCancel = function() {
+CtapClient.prototype.authenticatorCancel = function() {
 	// this.pending
 	return new Promise(function(resolve, reject) {});
 };
 
-Auth.prototype.authenticatorGetInfo = function() {
+CtapClient.prototype.authenticatorGetInfo = function() {
 	return new Promise(function(resolve, reject) {
 		// return
 		//    versions, extensions, aaguid
 	});
 };
 
-Auth.prototype.sendMessage = function(json, cb) {
+CtapClient.prototype.sendMessage = function(json, cb) {
 	return new Promise(function(resolve, reject) {
 		var msg;
 
@@ -324,7 +316,7 @@ Auth.prototype.sendMessage = function(json, cb) {
 	}.bind(this));
 };
 
-Auth.prototype.receiveMessage = function(cb) {
+CtapClient.prototype.receiveMessage = function(cb) {
 	return new Promise(function(resolve, reject) {
 		this.externalReceive(function(err, msg) {
 			if (err) {
@@ -407,6 +399,13 @@ function typedArray2HexStr(ta) {
 	return str;
 }
 
+// "why not just use TypedArray.buffer?", you ask
+// because, ta.buffer is not guaranteed to have any real
+// relationship to the TypedArray that you see
+// it could be too big, the bytes could be offset, etc.
+// this is really the only way to make sure the ArrayBuffer
+// is what we want it to be...
+// sadly this is yet another buffer copy... 
 function typedArrayBytes2ArrayBuffer(ta) {
 	var ab = new ArrayBuffer (ta.byteLength); 
 	var int = new Uint8Array (ab);
@@ -418,8 +417,8 @@ function typedArrayBytes2ArrayBuffer(ta) {
 }
 
 // TODO?
-// Auth.prototype.AuthError = function (message) {
-// 	this.name = "AuthError";
+// CtapClient.prototype.ClientError = function (message) {
+// 	this.name = "ClientError";
 // 	this.message = (message || "");
 // };
-// Auth.prototype.AuthError.prototype = Error.prototype;
+// CtapClient.prototype.ClientError.prototype = Error.prototype;
