@@ -2,7 +2,7 @@ var chai = require("chai");
 var sinon = require("sinon");
 var sinonChai = require("sinon-chai");
 var chaiAsPromised = require("chai-as-promised");
-var Auth = require("../ctap-authenticator.js");
+var CtapClient = require("../ctap-client.js");
 var helpers = require("./helpers/helpers.js");
 
 chai.use(sinonChai);
@@ -27,21 +27,21 @@ describe("Basic tests", function() {
 	});
 
 	it("send message", function() {
-		var a = new Auth(helpers.send, helpers.receive);
+		var a = new CtapClient(helpers.send, helpers.receive);
 		var p = a.sendMessage("1");
 		assert.isFulfilled(p);
 		assert(sendSpy.calledOnce, "send should have been called once");
 	});
 
 	it("receive message", function() {
-		var a = new Auth(helpers.send, helpers.receive);
+		var a = new CtapClient(helpers.send, helpers.receive);
 		var p = a.receiveMessage();
 		assert.isFulfilled(p);
 		assert(receiveSpy.calledOnce, "receive should have been called once");
 	});
 
 	it("send simple message", function() {
-		var a = new Auth(helpers.send, helpers.receive);
+		var a = new CtapClient(helpers.send, helpers.receive);
 		var p = a.sendMessage("1");
 		return p.should.eventually.satisfy(function(b) {
 			return helpers.typedArrayEquals (b, Uint8Array.from([1]));
@@ -51,7 +51,7 @@ describe("Basic tests", function() {
 	});
 
 	it("send moderately complex message", function() {
-		var a = new Auth(helpers.send, helpers.receive);
+		var a = new CtapClient(helpers.send, helpers.receive);
 		var p = a.sendMessage(JSON.stringify({
 			foo: "bar"
 		}));
@@ -70,7 +70,7 @@ describe("Basic tests", function() {
 	});
 
 	it("makeCredential", function() {
-		var a = new Auth(helpers.send, helpers.receive);
+		var a = new CtapClient(helpers.send, helpers.receive);
 		var p = a.authenticatorMakeCredential(
 			helpers.makeCredArgs.rpId,
 			helpers.makeCredArgs.clientDataHash,
@@ -95,7 +95,7 @@ describe("Basic tests", function() {
 	it("authenticatorMakeCredential with extensions");
 
 	it("authenticatorGetAssertion", function() {
-		var a = new Auth(helpers.send, helpers.receive);
+		var a = new CtapClient(helpers.send, helpers.receive);
 		var p = a.authenticatorGetAssertion(
 			helpers.makeCredArgs.rpId,
 			helpers.makeCredArgs.clientDataHash
